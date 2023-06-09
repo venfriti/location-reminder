@@ -1,12 +1,16 @@
 package com.udacity.project4.locationreminders.reminderslist
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.*
 import androidx.databinding.DataBindingUtil
+import com.google.firebase.auth.FirebaseAuth
 import com.udacity.project4.R
+import com.udacity.project4.authentication.AuthenticationActivity
 import com.udacity.project4.base.BaseFragment
 import com.udacity.project4.base.NavigationCommand
 import com.udacity.project4.databinding.FragmentRemindersBinding
+import com.udacity.project4.locationreminders.RemindersActivity
 import com.udacity.project4.utils.setDisplayHomeAsUpEnabled
 import com.udacity.project4.utils.setTitle
 import com.udacity.project4.utils.setup
@@ -32,6 +36,29 @@ class ReminderListFragment : BaseFragment() {
         setTitle(getString(R.string.app_name))
         binding.refreshLayout.setOnRefreshListener { _viewModel.loadReminders() }
         return binding.root
+    }
+
+    fun signInButtonClicked() {
+        // Check if the user is already signed in
+        val currentUser = FirebaseAuth.getInstance().currentUser
+        if (currentUser != null) {
+            // User is already signed in, navigate to the RemindersActivity
+            navigateToRemindersActivity()
+        } else {
+            // User is not signed in, start the sign-in process
+            startSignIn()
+        }
+    }
+
+    private fun startSignIn() {
+        val intent = Intent(requireContext(), AuthenticationActivity::class.java)
+        startActivity(intent)
+    }
+
+    private fun navigateToRemindersActivity() {
+        val intent = Intent(requireContext(), RemindersActivity::class.java)
+        startActivity(intent)
+        //finish() // Optional: Finish the MainActivity so that the user cannot navigate back to it using the back button
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -65,7 +92,8 @@ class ReminderListFragment : BaseFragment() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.logout -> {
-                // TODO: add the logout implementation
+                signInButtonClicked()
+                true
             }
         }
         return super.onOptionsItemSelected(item)
