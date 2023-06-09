@@ -5,7 +5,10 @@ import android.os.Bundle
 import android.view.*
 import android.widget.Toast
 import androidx.core.app.ActivityCompat.invalidateOptionsMenu
+import androidx.core.view.MenuHost
+import androidx.core.view.MenuProvider
 import androidx.databinding.DataBindingUtil
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
@@ -27,13 +30,14 @@ class ReminderListFragment : BaseFragment() {
     // Use Koin to retrieve the ViewModel instance
     override val _viewModel: RemindersListViewModel by viewModel()
     private lateinit var binding: FragmentRemindersBinding
-    private var checker : Boolean = false
+    private var checker: Boolean = false
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        binding = DataBindingUtil.inflate(inflater,
+        binding = DataBindingUtil.inflate(
+            inflater,
             R.layout.fragment_reminders, container, false
         )
         binding.viewModel = _viewModel
@@ -76,19 +80,51 @@ class ReminderListFragment : BaseFragment() {
         binding.addReminderFAB.setOnClickListener {
             navigateToAddReminder()
         }
-    }
 
+        val menuHost: MenuHost = requireActivity()
+        menuHost.addMenuProvider(object : MenuProvider {
+            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+                menuInflater.inflate(R.menu.main_menu, menu)
+            }
+
+            override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+                when (menuItem.itemId) {
+                    R.id.logout -> {
+                        if (checker) {
+                            signOutButtonClicked()
+                        } else {
+                            signInButtonClicked()
+                        }
+                        return true
+                    }
+                }
+                return false
+            }
+
+            override fun onPrepareMenu(menu: Menu) {
+                val signInMenuItem = menu.findItem(R.id.logout)
+                signInMenuItem.title = if (checker) {
+                    "Sign Out"
+                } else {
+                    "Sign In"
+                }
+            }
+        }, viewLifecycleOwner, Lifecycle.State.RESUMED)
+
+    }
     private fun observeAuthenticationState() {
-        _viewModel.authenticationState.observe(viewLifecycleOwner, Observer { authenticationState ->
+        _viewModel.authenticationState.observe(viewLifecycleOwner) { authenticationState ->
             when (authenticationState) {
                 RemindersListViewModel.AuthenticationState.AUTHENTICATED -> {
                     Toast.makeText(requireContext(), "Logged In", Toast.LENGTH_SHORT).show()
                     checker = true
-                } else -> {
+                }
+
+                else -> {
                     Toast.makeText(requireContext(), "not logged in", Toast.LENGTH_SHORT).show()
                 }
             }
-        })
+        }
     }
 
     override fun onResume() {
@@ -110,35 +146,9 @@ class ReminderListFragment : BaseFragment() {
         binding.reminderssRecyclerView.setup(adapter)
     }
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
-            R.id.logout -> {
-                if (checker){
-                    AuthUI.getInstance().signOut(requireContext())
-                    checker = false
-                    invalidateOptionsMenu(requireActivity())
-                } else {
-                    signInButtonClicked()
-                }
-                true
-            }
-        }
-        return super.onOptionsItemSelected(item)
-    }
-
-    override fun onPrepareOptionsMenu(menu: Menu) {
-        val signInMenuItem = menu.findItem(R.id.logout)
-        signInMenuItem.title = if (checker) {
-            "Sign Out"
-        } else {
-            "Sign In"
-        }
-        return super.onPrepareOptionsMenu(menu)
-    }
-
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        super.onCreateOptionsMenu(menu, inflater)
-        // Display logout as menu item
-        inflater.inflate(R.menu.main_menu, menu)
+    private fun signOutButtonClicked() {
+        AuthUI.getInstance().signOut(requireContext())
+        checker = false
+        invalidateOptionsMenu(requireActivity())
     }
 }
