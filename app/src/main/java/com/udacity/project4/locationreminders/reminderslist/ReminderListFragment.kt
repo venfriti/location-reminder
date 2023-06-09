@@ -41,8 +41,6 @@ class ReminderListFragment : BaseFragment() {
             R.layout.fragment_reminders, container, false
         )
         binding.viewModel = _viewModel
-
-        setHasOptionsMenu(true)
         setDisplayHomeAsUpEnabled(false)
         setTitle(getString(R.string.app_name))
         binding.refreshLayout.setOnRefreshListener { _viewModel.loadReminders() }
@@ -149,6 +147,6 @@ class ReminderListFragment : BaseFragment() {
     private fun signOutButtonClicked() {
         AuthUI.getInstance().signOut(requireContext())
         checker = false
-        invalidateOptionsMenu(requireActivity())
+        requireActivity().invalidateOptionsMenu()
     }
 }
