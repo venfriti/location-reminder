@@ -1,12 +1,17 @@
 package com.udacity.project4.locationreminders.savereminder.selectreminderlocation
 
+import android.Manifest
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.view.*
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Lifecycle
 import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
@@ -21,31 +26,16 @@ import org.koin.android.ext.android.inject
 class SelectLocationFragment : BaseFragment() {
 
     // Use Koin to get the view model of the SaveReminder
+    private lateinit var map: GoogleMap
     override val _viewModel: SaveReminderViewModel by inject()
     private lateinit var binding: FragmentSelectLocationBinding
+    private val REQUEST_LOCATION_PERMISSION = 1
 
     private val callback = OnMapReadyCallback { googleMap ->
-        /**
-         * Manipulates the map once available.
-         * This callback is triggered when the map is ready to be used.
-         * This is where we can add markers or lines, add listeners or move the camera.
-         * In this case, we just add a marker near Sydney, Australia.
-         * If Google Play services is not installed on the device, the user will be prompted to
-         * install it inside the SupportMapFragment. This method will only be triggered once the
-         * user has installed Google Play services and returned to the app.
-         */
-        /**
-         * Manipulates the map once available.
-         * This callback is triggered when the map is ready to be used.
-         * This is where we can add markers or lines, add listeners or move the camera.
-         * In this case, we just add a marker near Sydney, Australia.
-         * If Google Play services is not installed on the device, the user will be prompted to
-         * install it inside the SupportMapFragment. This method will only be triggered once the
-         * user has installed Google Play services and returned to the app.
-         */
+        val zoomLevel = 12f
         val sydney = LatLng(-34.0, 151.0)
         googleMap.addMarker(MarkerOptions().position(sydney).title("Marker in Sydney"))
-        googleMap.moveCamera(CameraUpdateFactory.newLatLng(sydney))
+        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(sydney, zoomLevel))
     }
 
     override fun onCreateView(
@@ -61,6 +51,8 @@ class SelectLocationFragment : BaseFragment() {
         setDisplayHomeAsUpEnabled(true)
 
         // TODO: add the map setup implementation
+        val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment?
+        mapFragment?.getMapAsync(callback)
         // TODO: zoom to the user location after taking his permission
         // TODO: add style to the map
         // TODO: put a marker to location that the user selected
@@ -68,12 +60,6 @@ class SelectLocationFragment : BaseFragment() {
         // TODO: call this function after the user confirms on the selected location
         onLocationSelected()
         return binding.root
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment?
-        mapFragment?.getMapAsync(callback)
     }
 
 //    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -135,5 +121,34 @@ class SelectLocationFragment : BaseFragment() {
             true
         }
         else -> super.onOptionsItemSelected(item)
+    }
+
+    @Suppress("DEPRECATED_IDENTITY_EQUALS")
+    private fun enableMyLocation(){
+        if (ContextCompat.checkSelfPermission(
+                requireContext(),
+                Manifest.permission.ACCESS_FINE_LOCATION) === PackageManager.PERMISSION_GRANTED
+        ){
+            map.isMyLocationEnabled = true
+        } else {
+            ActivityCompat.requestPermissions(
+                requireActivity(),
+                arrayOf<String>(Manifest.permission.ACCESS_FINE_LOCATION),
+                REQUEST_LOCATION_PERMISSION
+            )
+        }
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == REQUEST_LOCATION_PERMISSION) {
+            if (grantResults.isNotEmpty() && (grantResults[0] == PackageManager.PERMISSION_GRANTED)){
+                enableMyLocation()
+            }
+        }
     }
 }
