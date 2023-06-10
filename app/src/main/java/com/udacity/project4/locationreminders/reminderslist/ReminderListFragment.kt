@@ -61,6 +61,8 @@ class ReminderListFragment : BaseFragment() {
 
     private fun startSignIn() {
         val intent = Intent(requireContext(), AuthenticationActivity::class.java)
+        checker = true
+        requireActivity().invalidateOptionsMenu()
         startActivity(intent)
     }
 
@@ -110,6 +112,7 @@ class ReminderListFragment : BaseFragment() {
         }, viewLifecycleOwner, Lifecycle.State.RESUMED)
 
     }
+
     private fun observeAuthenticationState() {
         _viewModel.authenticationState.observe(viewLifecycleOwner) { authenticationState ->
             when (authenticationState) {
