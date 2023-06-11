@@ -58,7 +58,6 @@ class SelectLocationFragment : BaseFragment() {
         binding.viewModel = _viewModel
         binding.lifecycleOwner = this
 
-        setHasOptionsMenu(true)
         setDisplayHomeAsUpEnabled(true)
 
         // TODO: add the map setup implementation
@@ -75,39 +74,34 @@ class SelectLocationFragment : BaseFragment() {
     }
 
 
-//    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-//        super.onViewCreated(view, savedInstanceState)
-//
-//        val menuHost: MenuHost = requireActivity()
-//        menuHost.addMenuProvider(object : MenuProvider {
-//            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
-//                menuInflater.inflate(R.menu.main_menu, menu)
-//            }
-//
-//            override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
-//                when (menuItem.itemId) {
-//                    R.id.logout -> {
-//                        if (checker) {
-//                            signOutButtonClicked()
-//                        } else {
-//                            signInButtonClicked()
-//                        }
-//                        return true
-//                    }
-//                }
-//                return false
-//            }
-//
-//            override fun onPrepareMenu(menu: Menu) {
-//                val signInMenuItem = menu.findItem(R.id.logout)
-//                signInMenuItem.title = if (checker) {
-//                    "Sign Out"
-//                } else {
-//                    "Sign In"
-//                }
-//            }
-//        }, viewLifecycleOwner, Lifecycle.State.RESUMED)
-//    }
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        val menuHost: MenuHost = requireActivity()
+        menuHost.addMenuProvider(object : MenuProvider {
+            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+                menuInflater.inflate(R.menu.map_options, menu)
+            }
+
+            override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+                when (menuItem.itemId) {
+                    R.id.normal_map -> {
+                        map.mapType = GoogleMap.MAP_TYPE_NORMAL
+                    }
+                    R.id.hybrid_map -> {
+                        map.mapType = GoogleMap.MAP_TYPE_HYBRID
+                    }
+                    R.id.satellite_map -> {
+                        map.mapType = GoogleMap.MAP_TYPE_SATELLITE
+                    }
+                    R.id.terrain_map -> {
+                        map.mapType = GoogleMap.MAP_TYPE_TERRAIN
+                    }
+                }
+                return false
+            }
+        }, viewLifecycleOwner, Lifecycle.State.RESUMED)
+    }
 
     private fun onLocationSelected() {
         // TODO: When the user confirms on the selected location,
@@ -130,29 +124,5 @@ class SelectLocationFragment : BaseFragment() {
         } catch (e: Resources.NotFoundException) {
             Log.e(TAG, "Can't find style. Error: ", e)
         }
-    }
-
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        inflater.inflate(R.menu.map_options, menu)
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem) = when (item.itemId) {
-        R.id.normal_map -> {
-            map.mapType = GoogleMap.MAP_TYPE_NORMAL
-            true
-        }
-        R.id.hybrid_map -> {
-            map.mapType = GoogleMap.MAP_TYPE_HYBRID
-            true
-        }
-        R.id.satellite_map -> {
-            map.mapType = GoogleMap.MAP_TYPE_SATELLITE
-            true
-        }
-        R.id.terrain_map -> {
-            map.mapType = GoogleMap.MAP_TYPE_TERRAIN
-            true
-        }
-        else -> super.onOptionsItemSelected(item)
     }
 }
