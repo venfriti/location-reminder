@@ -1,16 +1,19 @@
 package com.udacity.project4.locationreminders.savereminder.selectreminderlocation
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.PackageManager
 import android.content.res.Resources
 import android.location.LocationManager
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.*
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.MenuHost
@@ -43,14 +46,15 @@ class SelectLocationFragment : BaseFragment() {
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private val LOCATION_PERMISSION_REQUEST_CODE = 1
     private val REQUEST_LOCATION_PERMISSION = 1
-    private lateinit var requestPermissionLauncher: ActivityResultLauncher<String>
 
+    @RequiresApi(Build.VERSION_CODES.Q)
     private val callback = OnMapReadyCallback { googleMap ->
         map = googleMap
         enableMyLocation()
         setMapStyle(map)
     }
 
+    @RequiresApi(Build.VERSION_CODES.Q)
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
@@ -110,48 +114,102 @@ class SelectLocationFragment : BaseFragment() {
         }, viewLifecycleOwner, Lifecycle.State.RESUMED)
     }
 
+    private fun isPermissionGranted(): Boolean {
+        return ContextCompat.checkSelfPermission(
+            requireContext(),
+            Manifest.permission.ACCESS_FINE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
+    }
+
+    @RequiresApi(Build.VERSION_CODES.Q)
+    @SuppressLint("MissingPermission")
     private fun enableMyLocation() {
-        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION)
-            == PackageManager.PERMISSION_GRANTED) {
+        if (isPermissionGranted()) {
             map.isMyLocationEnabled = true
-            zoomToUserLocation()
+            Toast.makeText(context, "Location permission is granted.", Toast.LENGTH_SHORT).show()
         } else {
-            ActivityCompat.requestPermissions(
-                requireActivity(),
-                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
-                LOCATION_PERMISSION_REQUEST_CODE
+            requestPermissionLauncher.launch(
+                arrayOf(
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+                )
             )
         }
     }
 
-    private fun zoomToUserLocation() {
-        fusedLocationClient.lastLocation.addOnSuccessListener { location ->
-            if (location != null) {
-                val userLatLng = LatLng(location.latitude, location.longitude)
-                map.animateCamera(CameraUpdateFactory.newLatLngZoom(userLatLng, 15f))
-            } else {
-                Toast.makeText(requireContext(), "Unable to get current location", Toast.LENGTH_SHORT).show()
-            }
-        }
-    }
+    @RequiresApi(Build.VERSION_CODES.Q)
+    val requestPermissionLauncher =
+        registerForActivityResult(
+            ActivityResultContracts.RequestMultiplePermissions()
+        ) { permissions ->
+            when {
+                permissions.getOrDefault(Manifest.permission.ACCESS_FINE_LOCATION, false) -> {
+                    enableMyLocation()
+                }
+                permissions.getOrDefault(Manifest.permission.ACCESS_COARSE_LOCATION, false) -> {
+                    enableMyLocation()
+                }
 
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
-    ) {
-        if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
-            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                enableMyLocation()
-            } else {
-                Toast.makeText(
-                    requireContext(),
-                    "Location permission denied. Defaulting to a default location.",
-                    Toast.LENGTH_SHORT
-                ).show()
+                else -> {
+                    Log.i("Permission: ", "Denied")
+                    Toast.makeText(
+                        context,
+                        "Location permission was not granted.",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
             }
         }
-    }
+
+//    private fun enableMyLocation() {
+//        if (ContextCompat.checkSelfPermission(
+//                requireContext(),
+//                Manifest.permission.ACCESS_FINE_LOCATION
+//            )
+//            == PackageManager.PERMISSION_GRANTED
+//        ) {
+//            map.isMyLocationEnabled = true
+//            zoomToUserLocation()
+//        } else {
+//            ActivityCompat.requestPermissions(
+//                requireActivity(),
+//                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
+//                LOCATION_PERMISSION_REQUEST_CODE
+//            )
+//        }
+//    }
+//
+//    private fun zoomToUserLocation() {
+//        fusedLocationClient.lastLocation.addOnSuccessListener { location ->
+//            if (location != null) {
+//                val userLatLng = LatLng(location.latitude, location.longitude)
+//                map.animateCamera(CameraUpdateFactory.newLatLngZoom(userLatLng, 15f))
+//            } else {
+//                Toast.makeText(
+//                    requireContext(),
+//                    "Unable to get current location",
+//                    Toast.LENGTH_SHORT
+//                ).show()
+//            }
+//        }
+//    }
+//
+//    override fun onRequestPermissionsResult(
+//        requestCode: Int,
+//        permissions: Array<String>,
+//        grantResults: IntArray
+//    ) {
+//        if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+//            enableMyLocation()
+//        } else {
+//            Toast.makeText(
+//                requireContext(),
+//                "Location permission denied. Defaulting to a default location.",
+//                Toast.LENGTH_SHORT
+//            ).show()
+//
+//        }
+//    }
 
     private fun onLocationSelected() {
         // TODO: When the user confirms on the selected location,
