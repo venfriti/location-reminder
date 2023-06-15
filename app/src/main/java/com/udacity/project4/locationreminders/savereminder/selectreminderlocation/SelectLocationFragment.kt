@@ -44,17 +44,13 @@ class SelectLocationFragment : BaseFragment() {
     private lateinit var binding: FragmentSelectLocationBinding
     private val TAG = SelectLocationFragment::class.java.simpleName
     private lateinit var fusedLocationClient: FusedLocationProviderClient
-    private val LOCATION_PERMISSION_REQUEST_CODE = 1
-    private val REQUEST_LOCATION_PERMISSION = 1
 
-    @RequiresApi(Build.VERSION_CODES.Q)
     private val callback = OnMapReadyCallback { googleMap ->
         map = googleMap
         enableMyLocation()
         setMapStyle(map)
     }
 
-    @RequiresApi(Build.VERSION_CODES.Q)
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
@@ -121,11 +117,11 @@ class SelectLocationFragment : BaseFragment() {
         ) == PackageManager.PERMISSION_GRANTED
     }
 
-    @RequiresApi(Build.VERSION_CODES.Q)
     @SuppressLint("MissingPermission")
     private fun enableMyLocation() {
         if (isPermissionGranted()) {
             map.isMyLocationEnabled = true
+            zoomToUserLocation()
             Toast.makeText(context, "Location permission is granted.", Toast.LENGTH_SHORT).show()
         } else {
             requestPermissionLauncher.launch(
@@ -137,8 +133,7 @@ class SelectLocationFragment : BaseFragment() {
         }
     }
 
-    @RequiresApi(Build.VERSION_CODES.Q)
-    val requestPermissionLauncher =
+    private val requestPermissionLauncher =
         registerForActivityResult(
             ActivityResultContracts.RequestMultiplePermissions()
         ) { permissions ->
@@ -161,55 +156,21 @@ class SelectLocationFragment : BaseFragment() {
             }
         }
 
-//    private fun enableMyLocation() {
-//        if (ContextCompat.checkSelfPermission(
-//                requireContext(),
-//                Manifest.permission.ACCESS_FINE_LOCATION
-//            )
-//            == PackageManager.PERMISSION_GRANTED
-//        ) {
-//            map.isMyLocationEnabled = true
-//            zoomToUserLocation()
-//        } else {
-//            ActivityCompat.requestPermissions(
-//                requireActivity(),
-//                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
-//                LOCATION_PERMISSION_REQUEST_CODE
-//            )
-//        }
-//    }
-//
-//    private fun zoomToUserLocation() {
-//        fusedLocationClient.lastLocation.addOnSuccessListener { location ->
-//            if (location != null) {
-//                val userLatLng = LatLng(location.latitude, location.longitude)
-//                map.animateCamera(CameraUpdateFactory.newLatLngZoom(userLatLng, 15f))
-//            } else {
-//                Toast.makeText(
-//                    requireContext(),
-//                    "Unable to get current location",
-//                    Toast.LENGTH_SHORT
-//                ).show()
-//            }
-//        }
-//    }
-//
-//    override fun onRequestPermissionsResult(
-//        requestCode: Int,
-//        permissions: Array<String>,
-//        grantResults: IntArray
-//    ) {
-//        if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-//            enableMyLocation()
-//        } else {
-//            Toast.makeText(
-//                requireContext(),
-//                "Location permission denied. Defaulting to a default location.",
-//                Toast.LENGTH_SHORT
-//            ).show()
-//
-//        }
-//    }
+    @SuppressLint("MissingPermission")
+    private fun zoomToUserLocation() {
+        fusedLocationClient.lastLocation.addOnSuccessListener { location ->
+            if (location != null) {
+                val userLatLng = LatLng(location.latitude, location.longitude)
+                map.animateCamera(CameraUpdateFactory.newLatLngZoom(userLatLng, 15f))
+            } else {
+                Toast.makeText(
+                    requireContext(),
+                    "Unable to get current location",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+        }
+    }
 
     private fun onLocationSelected() {
         // TODO: When the user confirms on the selected location,
