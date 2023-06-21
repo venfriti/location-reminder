@@ -39,7 +39,9 @@ import com.google.android.material.snackbar.Snackbar
 import com.udacity.project4.BuildConfig
 import com.udacity.project4.R
 import com.udacity.project4.base.BaseFragment
+import com.udacity.project4.base.NavigationCommand
 import com.udacity.project4.databinding.FragmentSelectLocationBinding
+import com.udacity.project4.locationreminders.savereminder.SaveReminderFragmentDirections
 import com.udacity.project4.locationreminders.savereminder.SaveReminderViewModel
 import com.udacity.project4.utils.setDisplayHomeAsUpEnabled
 import org.koin.android.ext.android.inject
@@ -147,7 +149,7 @@ class SelectLocationFragment : BaseFragment() {
                     .position(latLng)
                     .title(getString(R.string.dropped_pin))
                     .snippet(snippet)
-//                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE))
+                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE))
             )
         }
     }
@@ -166,6 +168,7 @@ class SelectLocationFragment : BaseFragment() {
                     .position(poi.latLng)
                     .title(poi.name)
                     .snippet(snippet)
+                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE))
             )
             poiMarker?.showInfoWindow()
         }
@@ -236,7 +239,17 @@ class SelectLocationFragment : BaseFragment() {
         // TODO: When the user confirms on the selected location,
         //  send back the selected location details to the view model
         //  and navigate back to the previous fragment to save the reminder and add the geofence
-        Toast.makeText(requireActivity(), "Location Saved", Toast.LENGTH_SHORT).show()
+        val latitude = _mapPosition.value?.latitude
+        val longitude = _mapPosition.value?.longitude
+        if (latitude == null){
+            Toast.makeText(requireActivity(), "No location picked yet", Toast.LENGTH_SHORT).show()
+        } else {
+            Toast.makeText(requireActivity(), "Location Saved $latitude, $longitude", Toast.LENGTH_SHORT).show()
+            val directions = SelectLocationFragmentDirections
+                .actionSelectLocationFragmentToSaveReminderFragment()
+            _viewModel.navigationCommand.value = NavigationCommand.To(directions)
+
+        }
     }
 
 
