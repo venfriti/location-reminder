@@ -23,6 +23,8 @@ import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -50,6 +52,9 @@ class SelectLocationFragment : BaseFragment() {
     private lateinit var binding: FragmentSelectLocationBinding
     private val TAG = SelectLocationFragment::class.java.simpleName
     private lateinit var fusedLocationClient: FusedLocationProviderClient
+    private val _mapPosition = MutableLiveData<LatLng>()
+    val mapPosition : LiveData<LatLng>
+        get() = _mapPosition
 
     private val callback = OnMapReadyCallback { googleMap ->
         map = googleMap
@@ -81,7 +86,10 @@ class SelectLocationFragment : BaseFragment() {
         // TODO: put a marker to location that the user selected
 
         // TODO: call this function after the user confirms on the selected location
-        onLocationSelected()
+        binding.saveButton.setOnClickListener {
+            onLocationSelected()
+        }
+
         return binding.root
     }
 
@@ -127,6 +135,7 @@ class SelectLocationFragment : BaseFragment() {
 
     private fun setMapLongClick(map: GoogleMap) {
         map.setOnMapClickListener { latLng ->
+            _mapPosition.value = latLng
             val snippet = String.format(
                 "Lat: %1$.5f, Long: %2$.5f",
                 latLng.latitude,
@@ -138,18 +147,25 @@ class SelectLocationFragment : BaseFragment() {
                     .position(latLng)
                     .title(getString(R.string.dropped_pin))
                     .snippet(snippet)
-                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE))
+//                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE))
             )
         }
     }
 
     private fun setPoiClick(map: GoogleMap){
         map.setOnPoiClickListener { poi ->
+            _mapPosition.value = poi.latLng
+            val snippet = String.format(
+                "Lat: %1$.5f, Long: %2$.5f",
+                poi.latLng.latitude,
+                poi.latLng.longitude
+            )
             map.clear()
             val poiMarker = map.addMarker(
                 MarkerOptions()
                     .position(poi.latLng)
                     .title(poi.name)
+                    .snippet(snippet)
             )
             poiMarker?.showInfoWindow()
         }
@@ -220,7 +236,10 @@ class SelectLocationFragment : BaseFragment() {
         // TODO: When the user confirms on the selected location,
         //  send back the selected location details to the view model
         //  and navigate back to the previous fragment to save the reminder and add the geofence
+        Toast.makeText(requireActivity(), "Location Saved", Toast.LENGTH_SHORT).show()
     }
+
+
 
     private fun setMapStyle(map: GoogleMap) {
         try {
