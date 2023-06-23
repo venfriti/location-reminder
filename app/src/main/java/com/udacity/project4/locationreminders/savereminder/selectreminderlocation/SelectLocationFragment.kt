@@ -57,7 +57,7 @@ class SelectLocationFragment : BaseFragment() {
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private var mapPosition: LatLng? = null
     private lateinit var selectedLocation: String
-    private lateinit var checker: PointOfInterest
+    private var pointOfInterest: PointOfInterest? = null
 
     private val callback = OnMapReadyCallback { googleMap ->
         map = googleMap
@@ -79,13 +79,17 @@ class SelectLocationFragment : BaseFragment() {
         setDisplayHomeAsUpEnabled(true)
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity())
+
         val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment?
         mapFragment?.getMapAsync(callback)
 
         binding.saveButton.setOnClickListener {
             if (mapPosition != null) {
-                onLocationSelected()
-                _viewModel.onLocationSelected(mapPosition, selectedLocation)
+                _viewModel.onLocationSelected(mapPosition, selectedLocation, pointOfInterest)
+
+                val directions = SelectLocationFragmentDirections
+                    .actionSelectLocationFragmentToSaveReminderFragment()
+                _viewModel.navigationCommand.value = NavigationCommand.To(directions)
             } else {
                 Toast.makeText(requireActivity(), "No location picked yet", Toast.LENGTH_SHORT)
                     .show()
@@ -137,8 +141,7 @@ class SelectLocationFragment : BaseFragment() {
 
     private fun setMapLongClick(map: GoogleMap) {
         map.setOnMapClickListener { latLng ->
-            mapPosition = latLng
-            selectedLocation = "CustomLocation"
+
             val snippet = String.format(
                 "Lat: %1$.5f, Long: %2$.5f",
                 latLng.latitude,
@@ -150,21 +153,22 @@ class SelectLocationFragment : BaseFragment() {
                     .position(latLng)
                     .title(getString(R.string.dropped_pin))
                     .snippet(snippet)
-                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE))
+                    .icon(BitmapDescriptorFactory
+                        .defaultMarker(BitmapDescriptorFactory.HUE_BLUE))
             )
+            mapPosition = latLng
+            selectedLocation = "CustomLocation"
         }
     }
 
     private fun setPoiClick(map: GoogleMap) {
         map.setOnPoiClickListener { poi ->
-            mapPosition = poi.latLng
-            selectedLocation = poi.name
-            checker = poi
             val snippet = String.format(
                 "Lat: %1$.5f, Long: %2$.5f",
                 poi.latLng.latitude,
                 poi.latLng.longitude
             )
+
             map.clear()
             val poiMarker = map.addMarker(
                 MarkerOptions()
@@ -173,7 +177,11 @@ class SelectLocationFragment : BaseFragment() {
                     .snippet(snippet)
                     .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE))
             )
+
             poiMarker?.showInfoWindow()
+            mapPosition = poi.latLng
+            selectedLocation = poi.name
+            pointOfInterest = poi
         }
     }
 
@@ -238,13 +246,6 @@ class SelectLocationFragment : BaseFragment() {
             }
         }
     }
-
-    private fun onLocationSelected() {
-        val directions = SelectLocationFragmentDirections
-            .actionSelectLocationFragmentToSaveReminderFragment()
-        _viewModel.navigationCommand.value = NavigationCommand.To(directions)
-    }
-
 
     private fun setMapStyle(map: GoogleMap) {
         try {
