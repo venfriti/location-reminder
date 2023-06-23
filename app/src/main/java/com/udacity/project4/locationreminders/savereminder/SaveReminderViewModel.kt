@@ -3,6 +3,7 @@ package com.udacity.project4.locationreminders.savereminder
 import android.app.Application
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
+import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.PointOfInterest
 import com.udacity.project4.R
 import com.udacity.project4.base.BaseViewModel
@@ -31,6 +32,12 @@ class SaveReminderViewModel(val app: Application, val dataSource: ReminderDataSo
         selectedPOI.value = null
         latitude.value = null
         longitude.value = null
+    }
+
+    fun onLocationSelected(mapPosition: LatLng?, selectedLocation: String){
+        latitude.value = mapPosition?.latitude
+        longitude.value = mapPosition?.longitude
+        reminderSelectedLocationStr.value = selectedLocation
     }
 
     /**
