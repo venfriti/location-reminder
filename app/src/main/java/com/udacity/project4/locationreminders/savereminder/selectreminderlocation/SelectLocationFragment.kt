@@ -54,8 +54,8 @@ class SelectLocationFragment : BaseFragment() {
     private lateinit var binding: FragmentSelectLocationBinding
     private val TAG = SelectLocationFragment::class.java.simpleName
     private lateinit var fusedLocationClient: FusedLocationProviderClient
-    private val _mapPosition = MutableLiveData<LatLng>()
-    private val _selectedLocation = MutableLiveData<String>()
+    private var mapPosition: LatLng? = null
+    private lateinit var selectedLocation: String
 
     private val callback = OnMapReadyCallback { googleMap ->
         map = googleMap
@@ -88,7 +88,12 @@ class SelectLocationFragment : BaseFragment() {
 
         // TODO: call this function after the user confirms on the selected location
         binding.saveButton.setOnClickListener {
-            onLocationSelected()
+            if (mapPosition != null) {
+                onLocationSelected()
+            } else {
+                Toast.makeText(requireActivity(), "No location picked yet", Toast.LENGTH_SHORT)
+                    .show()
+            }
         }
 
         return binding.root
@@ -136,8 +141,8 @@ class SelectLocationFragment : BaseFragment() {
 
     private fun setMapLongClick(map: GoogleMap) {
         map.setOnMapClickListener { latLng ->
-            _mapPosition.value = latLng
-            _selectedLocation.value = "Custom Location"
+            mapPosition = latLng
+            selectedLocation = "CustomLocation"
             val snippet = String.format(
                 "Lat: %1$.5f, Long: %2$.5f",
                 latLng.latitude,
@@ -154,10 +159,10 @@ class SelectLocationFragment : BaseFragment() {
         }
     }
 
-    private fun setPoiClick(map: GoogleMap){
+    private fun setPoiClick(map: GoogleMap) {
         map.setOnPoiClickListener { poi ->
-            _mapPosition.value = poi.latLng
-            _selectedLocation.value = poi.name
+            mapPosition = poi.latLng
+            selectedLocation = poi.name
             val snippet = String.format(
                 "Lat: %1$.5f, Long: %2$.5f",
                 poi.latLng.latitude,
@@ -199,6 +204,7 @@ class SelectLocationFragment : BaseFragment() {
                 permissions.getOrDefault(Manifest.permission.ACCESS_FINE_LOCATION, false) -> {
                     enableMyLocation()
                 }
+
                 permissions.getOrDefault(Manifest.permission.ACCESS_COARSE_LOCATION, false) -> {
                     enableMyLocation()
                 }
@@ -240,20 +246,20 @@ class SelectLocationFragment : BaseFragment() {
         // TODO: When the user confirms on the selected location,
         //  send back the selected location details to the view model
         //  and navigate back to the previous fragment to save the reminder and add the geofence
-        val latitude = _mapPosition.value?.latitude
-        val longitude = _mapPosition.value?.longitude
-        val name = _selectedLocation.value
-        if (latitude == null || longitude == null){
-            Toast.makeText(requireActivity(), "No location picked yet", Toast.LENGTH_SHORT).show()
-        } else {
-            Toast.makeText(requireActivity(), "Location Saved $latitude, $longitude, $name", Toast.LENGTH_SHORT).show()
-            val directions = SelectLocationFragmentDirections
-                .actionSelectLocationFragmentToSaveReminderFragment()
-            _viewModel.navigationCommand.value = NavigationCommand.To(directions)
+        val latitude = mapPosition?.latitude
+        val longitude = mapPosition?.longitude
+        val name = selectedLocation
 
-        }
+        Toast.makeText(
+            requireActivity(),
+            "Location Saved $latitude, $longitude, $name",
+            Toast.LENGTH_SHORT
+        ).show()
+
+        val directions = SelectLocationFragmentDirections
+            .actionSelectLocationFragmentToSaveReminderFragment()
+        _viewModel.navigationCommand.value = NavigationCommand.To(directions)
     }
-
 
 
     private fun setMapStyle(map: GoogleMap) {
