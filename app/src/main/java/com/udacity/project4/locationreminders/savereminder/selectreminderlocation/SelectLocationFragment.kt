@@ -55,8 +55,7 @@ class SelectLocationFragment : BaseFragment() {
     private val TAG = SelectLocationFragment::class.java.simpleName
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private val _mapPosition = MutableLiveData<LatLng>()
-    val mapPosition : LiveData<LatLng>
-        get() = _mapPosition
+    private val _selectedLocation = MutableLiveData<String>()
 
     private val callback = OnMapReadyCallback { googleMap ->
         map = googleMap
@@ -138,6 +137,7 @@ class SelectLocationFragment : BaseFragment() {
     private fun setMapLongClick(map: GoogleMap) {
         map.setOnMapClickListener { latLng ->
             _mapPosition.value = latLng
+            _selectedLocation.value = "Custom Location"
             val snippet = String.format(
                 "Lat: %1$.5f, Long: %2$.5f",
                 latLng.latitude,
@@ -157,6 +157,7 @@ class SelectLocationFragment : BaseFragment() {
     private fun setPoiClick(map: GoogleMap){
         map.setOnPoiClickListener { poi ->
             _mapPosition.value = poi.latLng
+            _selectedLocation.value = poi.name
             val snippet = String.format(
                 "Lat: %1$.5f, Long: %2$.5f",
                 poi.latLng.latitude,
@@ -241,10 +242,11 @@ class SelectLocationFragment : BaseFragment() {
         //  and navigate back to the previous fragment to save the reminder and add the geofence
         val latitude = _mapPosition.value?.latitude
         val longitude = _mapPosition.value?.longitude
-        if (latitude == null){
+        val name = _selectedLocation.value
+        if (latitude == null || longitude == null){
             Toast.makeText(requireActivity(), "No location picked yet", Toast.LENGTH_SHORT).show()
         } else {
-            Toast.makeText(requireActivity(), "Location Saved $latitude, $longitude", Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireActivity(), "Location Saved $latitude, $longitude, $name", Toast.LENGTH_SHORT).show()
             val directions = SelectLocationFragmentDirections
                 .actionSelectLocationFragmentToSaveReminderFragment()
             _viewModel.navigationCommand.value = NavigationCommand.To(directions)

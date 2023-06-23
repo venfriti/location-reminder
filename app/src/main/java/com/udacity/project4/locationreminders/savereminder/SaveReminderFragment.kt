@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.databinding.DataBindingUtil
 import com.udacity.project4.R
 import com.udacity.project4.base.BaseFragment
@@ -23,7 +24,6 @@ class SaveReminderFragment : BaseFragment() {
     ): View {
         val layoutId = R.layout.fragment_save_reminder
         binding = DataBindingUtil.inflate(inflater, layoutId, container, false)
-
         setDisplayHomeAsUpEnabled(true)
         binding.viewModel = _viewModel
         return binding.root
