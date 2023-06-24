@@ -84,16 +84,32 @@ class SelectLocationFragment : BaseFragment() {
         mapFragment?.getMapAsync(callback)
 
         binding.saveButton.setOnClickListener {
-            if (mapPosition != null) {
-                _viewModel.onLocationSelected(mapPosition, selectedLocation, pointOfInterest)
+            if (isPermissionGranted()){
+                if (mapPosition != null) {
+                    _viewModel.onLocationSelected(mapPosition, selectedLocation, pointOfInterest)
 
-                val directions = SelectLocationFragmentDirections
-                    .actionSelectLocationFragmentToSaveReminderFragment()
-                _viewModel.navigationCommand.value = NavigationCommand.To(directions)
+                    val directions = SelectLocationFragmentDirections
+                        .actionSelectLocationFragmentToSaveReminderFragment()
+                    _viewModel.navigationCommand.value = NavigationCommand.To(directions)
+                } else {
+                    Toast.makeText(requireActivity(), "No location picked yet", Toast.LENGTH_SHORT)
+                        .show()
+                }
             } else {
-                Toast.makeText(requireActivity(), "No location picked yet", Toast.LENGTH_SHORT)
-                    .show()
+                Snackbar.make(
+                    requireView(),
+                    R.string.permission_denied_explanation,
+                    Snackbar.LENGTH_LONG
+                )
+                    .setAction(R.string.settings) {
+                        startActivity(Intent().apply {
+                            action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
+                            data = Uri.fromParts("package", BuildConfig.APPLICATION_ID, null)
+                            flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                        })
+                    }.show()
             }
+
         }
 
         return binding.root
@@ -218,7 +234,7 @@ class SelectLocationFragment : BaseFragment() {
                     Snackbar.make(
                         requireView(),
                         R.string.permission_denied_explanation,
-                        Snackbar.LENGTH_INDEFINITE
+                        Snackbar.LENGTH_LONG
                     )
                         .setAction(R.string.settings) {
                             startActivity(Intent().apply {

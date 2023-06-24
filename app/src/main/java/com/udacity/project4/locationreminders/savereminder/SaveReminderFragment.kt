@@ -1,10 +1,15 @@
 package com.udacity.project4.locationreminders.savereminder
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.annotation.RequiresApi
+import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
 import com.udacity.project4.R
 import com.udacity.project4.base.BaseFragment
@@ -51,6 +56,9 @@ class SaveReminderFragment : BaseFragment() {
 
             // TODO: use the user entered reminder details to:
             //  1) add a geofencing request
+//
+//            enableMyLocation()
+
             //  2) save the reminder to the local db
             val newDataItem = ReminderDataItem(title, description, location, latitude, longitude)
             _viewModel.validateAndSaveReminder(newDataItem)
@@ -59,6 +67,32 @@ class SaveReminderFragment : BaseFragment() {
 //            _viewModel.navigationCommand.value = NavigationCommand.To(directions)
         }
     }
+
+    @RequiresApi(Build.VERSION_CODES.Q)
+    private fun isPermissionGranted(): Boolean {
+        return ContextCompat.checkSelfPermission(
+            requireContext(),
+            Manifest.permission.ACCESS_BACKGROUND_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
+    }
+
+//    private fun enableMyLocation{
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q){
+//            isPermissionGranted()
+//        }
+//        if (isPermissionGranted()) {
+//            map.isMyLocationEnabled = true
+//            zoomToUserLocation()
+//            Toast.makeText(context, "Location permission is granted.", Toast.LENGTH_SHORT).show()
+//        } else {
+//            requestPermissionLauncher.launch(
+//                arrayOf(
+//                    Manifest.permission.ACCESS_FINE_LOCATION,
+//                    Manifest.permission.ACCESS_COARSE_LOCATION
+//                )
+//            )
+//        }
+//    }
 
     override fun onDestroy() {
         super.onDestroy()

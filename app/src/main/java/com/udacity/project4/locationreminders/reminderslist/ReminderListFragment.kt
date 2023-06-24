@@ -43,6 +43,7 @@ class ReminderListFragment : BaseFragment() {
         binding.viewModel = _viewModel
         setDisplayHomeAsUpEnabled(false)
         setTitle(getString(R.string.app_name))
+
         binding.refreshLayout.setOnRefreshListener { _viewModel.loadReminders() }
         return binding.root
     }
@@ -120,7 +121,6 @@ class ReminderListFragment : BaseFragment() {
                     Toast.makeText(requireContext(), "Logged In", Toast.LENGTH_SHORT).show()
                     checker = true
                 }
-
                 else -> {
                     Toast.makeText(requireContext(), "not logged in", Toast.LENGTH_SHORT).show()
                 }
