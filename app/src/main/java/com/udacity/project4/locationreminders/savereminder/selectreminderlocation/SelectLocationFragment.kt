@@ -86,7 +86,7 @@ class SelectLocationFragment : BaseFragment() {
         binding.saveButton.setOnClickListener {
             if (isPermissionGranted()){
                 if (mapPosition != null) {
-                    _viewModel.onLocationSelected(mapPosition, selectedLocation, pointOfInterest)
+                    _viewModel.onLocationSelected(mapPosition!!, selectedLocation)
 
                     val directions = SelectLocationFragmentDirections
                         .actionSelectLocationFragmentToSaveReminderFragment()
