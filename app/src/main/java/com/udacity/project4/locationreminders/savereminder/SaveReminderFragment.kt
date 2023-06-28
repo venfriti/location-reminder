@@ -1,6 +1,7 @@
 package com.udacity.project4.locationreminders.savereminder
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.PendingIntent
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -15,7 +16,6 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
-import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
 import com.google.android.gms.location.Geofence
@@ -40,11 +40,16 @@ class SaveReminderFragment : BaseFragment() {
     override val _viewModel: SaveReminderViewModel by inject()
     private lateinit var geofencingClient: GeofencingClient
     private lateinit var binding: FragmentSaveReminderBinding
+    private lateinit var newDataItem: ReminderDataItem
+    private var radius = 500f
 
     private val geofencePendingIntent: PendingIntent by lazy {
         val intent = Intent(requireContext(), GeofenceBroadcastReceiver::class.java)
         intent.action = ACTION_GEOFENCE_EVENT
-        PendingIntent.getBroadcast(requireActivity(), 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
+        PendingIntent.getBroadcast(requireActivity(),
+            0,
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE)
     }
 
     override fun onCreateView(
@@ -78,38 +83,50 @@ class SaveReminderFragment : BaseFragment() {
 
             // TODO: use the user entered reminder details to:
             //  1) add a geofencing request
+            newDataItem = ReminderDataItem(title, description, location, latitude, longitude)
+            if (validateEnteredData(newDataItem)) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    if (isPermissionGranted()) {
+                        addGeofence()
+                    } else {
+                        requestPermissionLauncher.launch(
+                            arrayOf(
+                                Manifest.permission.ACCESS_BACKGROUND_LOCATION
+                            )
+                        )
+                    }
+                } else {
+                    addGeofence()
+                }
 
-             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q){
-                 if (isPermissionGranted()) {
-                     addGeofence()
-                 } else {
-                     requestPermissionLauncher.launch(
-                         arrayOf(
-                             Manifest.permission.ACCESS_BACKGROUND_LOCATION
-                         )
-                     )
-                 }
-             } else {
-                 addGeofence()
-             }
-
-            //  2) save the reminder to the local db
-//            val newDataItem = ReminderDataItem(title, description, location, latitude, longitude)
-//            _viewModel.validateAndSaveReminder(newDataItem)
-//            val directions = SaveReminderFragmentDirections
-//                .actionSaveReminderFragmentToReminderListFragment()
-//            _viewModel.navigationCommand.value = NavigationCommand.To(directions)
+                //  2) save the reminder to the local db
+                _viewModel.validateAndSaveReminder(newDataItem)
+            }
         }
     }
 
+    private fun validateEnteredData(reminderData: ReminderDataItem): Boolean {
+        if (reminderData.title.isNullOrEmpty()) {
+            Toast.makeText(requireContext(), "Enter a title", Toast.LENGTH_SHORT).show()
+            return false
+        }
+
+        if (reminderData.location.isNullOrEmpty()) {
+            Toast.makeText(requireContext(), "Pick a Location", Toast.LENGTH_SHORT).show()
+            return false
+        }
+        return true
+    }
+
+    @SuppressLint("MissingPermission")
     private fun addGeofence() {
-        Toast.makeText(requireActivity(), "Permission Granted", Toast.LENGTH_SHORT).show()
         val geofence = Geofence.Builder()
             .setRequestId("geofenceIndex")
             .setCircularRegion(
                 _viewModel.latitude.value ?: 0.0,
                 _viewModel.longitude.value ?: 0.0,
-                100f)
+                radius)
+            .setRequestId(newDataItem.id)
             .setExpirationDuration(Geofence.NEVER_EXPIRE)
             .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER)
             .build()
@@ -119,20 +136,6 @@ class SaveReminderFragment : BaseFragment() {
             .addGeofence(geofence)
             .build()
 
-        if (ActivityCompat.checkSelfPermission(
-                requireContext(),
-                Manifest.permission.ACCESS_FINE_LOCATION
-            ) != PackageManager.PERMISSION_GRANTED
-        ) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
-            return
-        }
         geofencingClient.addGeofences(geofencingRequest, geofencePendingIntent).run {
             addOnSuccessListener {
                 Toast.makeText(requireContext(), R.string.geofences_added, Toast.LENGTH_SHORT).show()
