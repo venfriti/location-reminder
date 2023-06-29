@@ -206,7 +206,6 @@ class SelectLocationFragment : BaseFragment() {
         if (isPermissionGranted()) {
             map.isMyLocationEnabled = true
             zoomToUserLocation()
-            Toast.makeText(context, "Location permission is granted.", Toast.LENGTH_SHORT).show()
         } else {
             requestPermissionLauncher.launch(
                 arrayOf(

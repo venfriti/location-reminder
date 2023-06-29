@@ -44,7 +44,8 @@ class GeofenceTransitionsJobIntentService : JobIntentService(), CoroutineScope {
                 return
             }
 
-            if (geofencingEvent.geofenceTransition == Geofence.GEOFENCE_TRANSITION_ENTER) {
+            if (geofencingEvent.geofenceTransition == Geofence.GEOFENCE_TRANSITION_ENTER
+                || geofencingEvent.geofenceTransition == Geofence.GEOFENCE_TRANSITION_DWELL) {
                 sendNotification(geofencingEvent.triggeringGeofences)
             }
         }

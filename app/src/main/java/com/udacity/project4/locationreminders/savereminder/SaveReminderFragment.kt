@@ -88,6 +88,7 @@ class SaveReminderFragment : BaseFragment() {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                     if (isPermissionGranted()) {
                         addGeofence()
+                        _viewModel.validateAndSaveReminder(newDataItem)
                     } else {
                         requestPermissionLauncher.launch(
                             arrayOf(
@@ -97,10 +98,11 @@ class SaveReminderFragment : BaseFragment() {
                     }
                 } else {
                     addGeofence()
+                    _viewModel.validateAndSaveReminder(newDataItem)
                 }
 
                 //  2) save the reminder to the local db
-                _viewModel.validateAndSaveReminder(newDataItem)
+
             }
         }
     }
@@ -165,6 +167,7 @@ class SaveReminderFragment : BaseFragment() {
             when {
                 permissions.getOrDefault(Manifest.permission.ACCESS_BACKGROUND_LOCATION, false) -> {
                     addGeofence()
+                    _viewModel.validateAndSaveReminder(newDataItem)
                 }
 
                 else -> {
