@@ -111,7 +111,6 @@ class SelectLocationFragment : BaseFragment() {
             }
 
         }
-
         return binding.root
     }
 
