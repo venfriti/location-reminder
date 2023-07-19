@@ -31,17 +31,10 @@ class AuthenticationActivity : AppCompatActivity() {
         binding = ActivityAuthenticationBinding.inflate(layoutInflater)
         val view = binding.root
         setContentView(view)
-//        setContentView(R.layout.activity_authentication)
-        // TODO: Implement the create account and sign in using FirebaseUI,
-        //  use sign in using email and sign in using Google
-
-
-
 
         binding.authButton.setOnClickListener{
             launchSignInFlow()
         }
-
     }
 
     private fun launchSignInFlow() {
@@ -71,13 +64,10 @@ class AuthenticationActivity : AppCompatActivity() {
             val errorMessage = response?.error?.message
             Toast.makeText(this, errorMessage, Toast.LENGTH_SHORT).show()
             launchSignInFlow()
-            // Display error message or perform appropriate error handling
             // Sign-in failed
             // You can handle the error case here, e.g., display an error message
         }
     }
-
-
 
     private fun setupFirebaseUI() {
         val providers = arrayListOf(
