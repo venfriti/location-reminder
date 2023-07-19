@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.*
 import android.widget.Toast
 import androidx.core.app.ActivityCompat.invalidateOptionsMenu
+import androidx.core.app.ActivityCompat.startActivityForResult
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
 import androidx.databinding.DataBindingUtil
@@ -27,10 +28,27 @@ import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class ReminderListFragment : BaseFragment() {
 
+    companion object {
+        const val TAG = "Authentication Activity"
+        const val SIGN_IN_RESULT_CODE = 1001
+    }
+
     // Use Koin to retrieve the ViewModel instance
     override val _viewModel: RemindersListViewModel by viewModel()
     private lateinit var binding: FragmentRemindersBinding
     private var checker: Boolean = false
+
+//    init {
+//        if (!isLoggedIn()){
+//            signInButtonClicked()
+//        }
+//
+//    }
+
+    private fun isLoggedIn(): Boolean {
+        val currentUser = FirebaseAuth.getInstance().currentUser
+        return currentUser != null
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -66,6 +84,21 @@ class ReminderListFragment : BaseFragment() {
         requireActivity().invalidateOptionsMenu()
         startActivity(intent)
     }
+
+//    private fun launchSignInFlow(){
+//        val providers = arrayListOf(
+//            AuthUI.IdpConfig.EmailBuilder().build(),
+//            AuthUI.IdpConfig.GoogleBuilder().build()
+//        )
+//
+//        startActivityForResult(
+//            AuthUI.getInstance()
+//                .createSignInIntentBuilder()
+//                .setAvailableProviders(providers)
+//                .build(),
+//            ReminderListFragment.SIGN_IN_RESULT_CODE
+//        )
+//    }
 
     private fun navigateToRemindersActivity() {
         val intent = Intent(requireContext(), RemindersActivity::class.java)
@@ -121,6 +154,7 @@ class ReminderListFragment : BaseFragment() {
                     Toast.makeText(requireContext(), "Logged In", Toast.LENGTH_SHORT).show()
                     checker = true
                 }
+
                 else -> {
                     Toast.makeText(requireContext(), "not logged in", Toast.LENGTH_SHORT).show()
                 }
