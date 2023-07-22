@@ -44,12 +44,21 @@ class SaveReminderFragment : BaseFragment() {
     private var radius = 500f
 
     private val geofencePendingIntent: PendingIntent by lazy {
-        val intent = Intent(requireContext(), GeofenceBroadcastReceiver::class.java)
-        intent.action = ACTION_GEOFENCE_EVENT
-        PendingIntent.getBroadcast(requireActivity(),
-            0,
-            intent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S){
+            val intent = Intent(requireContext(), GeofenceBroadcastReceiver::class.java)
+            intent.action = ACTION_GEOFENCE_EVENT
+            PendingIntent.getBroadcast(requireActivity(),
+                0,
+                intent,
+                PendingIntent.FLAG_IMMUTABLE)
+        } else {
+            val intent = Intent(requireContext(), GeofenceBroadcastReceiver::class.java)
+            intent.action = ACTION_GEOFENCE_EVENT
+            PendingIntent.getBroadcast(requireActivity(),
+                0,
+                intent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE)
+        }
     }
 
     override fun onCreateView(
