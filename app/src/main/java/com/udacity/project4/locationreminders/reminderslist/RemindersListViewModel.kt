@@ -20,6 +20,18 @@ class RemindersListViewModel(
     // list that holds the reminder data to be displayed on the UI
     val remindersList = MutableLiveData<List<ReminderDataItem>>()
 
+    fun deleteReminder(id: String) {
+        viewModelScope.launch {
+            dataSource.deleteReminder(id)
+        }
+    }
+
+    fun getAllReminderDataItems() {
+        viewModelScope.launch {
+            dataSource.getReminders()
+        }
+    }
+
     /**
      * Get all the reminders from the DataSource and add them to the remindersList to be shown on the UI,
      * or show error if any

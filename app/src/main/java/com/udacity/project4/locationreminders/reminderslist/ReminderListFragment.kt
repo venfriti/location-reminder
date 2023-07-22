@@ -13,6 +13,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
+import androidx.recyclerview.widget.ItemTouchHelper
 import com.firebase.ui.auth.AuthUI
 import com.google.firebase.auth.FirebaseAuth
 import com.udacity.project4.R
@@ -21,6 +22,7 @@ import com.udacity.project4.base.BaseFragment
 import com.udacity.project4.base.NavigationCommand
 import com.udacity.project4.databinding.FragmentRemindersBinding
 import com.udacity.project4.locationreminders.RemindersActivity
+import com.udacity.project4.utils.SwipeToDeleteCallback
 import com.udacity.project4.utils.setDisplayHomeAsUpEnabled
 import com.udacity.project4.utils.setTitle
 import com.udacity.project4.utils.setup
@@ -91,9 +93,13 @@ class ReminderListFragment : BaseFragment() {
     }
 
     private fun setupRecyclerView() {
-        val adapter = RemindersListAdapter {}
+        val allReminderDataItems = _viewModel.getAllReminderDataItems()
+        val adapter = RemindersListAdapter(_viewModel, allReminderDataItems) {}
         // Setup the recycler view using the extension function
         binding.reminderssRecyclerView.setup(adapter)
+
+        val itemTouchHelper = ItemTouchHelper(SwipeToDeleteCallback(adapter))
+        itemTouchHelper.attachToRecyclerView(binding.reminderssRecyclerView)
     }
 
     private fun signOutButtonClicked() {

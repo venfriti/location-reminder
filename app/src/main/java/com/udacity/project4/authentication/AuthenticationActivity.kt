@@ -26,6 +26,7 @@ class AuthenticationActivity : AppCompatActivity() {
         const val SIGN_IN_RESULT_CODE = 1001
     }
 
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityAuthenticationBinding.inflate(layoutInflater)
@@ -34,6 +35,10 @@ class AuthenticationActivity : AppCompatActivity() {
 
         binding.authButton.setOnClickListener{
             launchSignInFlow()
+        }
+
+        if (isLoggedIn()){
+            navigateToRemindersActivity()
         }
     }
 
