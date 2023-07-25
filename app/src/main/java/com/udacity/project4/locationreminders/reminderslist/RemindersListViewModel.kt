@@ -4,8 +4,6 @@ import android.app.Application
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.map
 import androidx.lifecycle.viewModelScope
-import com.google.firebase.auth.FirebaseUser
-import com.google.firebase.ktx.Firebase
 import com.udacity.project4.authentication.FirebaseUserLiveData
 import com.udacity.project4.base.BaseViewModel
 import com.udacity.project4.locationreminders.data.ReminderDataSource
@@ -18,7 +16,15 @@ class RemindersListViewModel(
     private val dataSource: ReminderDataSource
 ) : BaseViewModel(app) {
     // list that holds the reminder data to be displayed on the UI
+//    val remindersList: MutableList<ReminderDataItem> = mutableListOf()
     val remindersList = MutableLiveData<List<ReminderDataItem>>()
+
+    fun deleteReminders(reminder: ReminderDataItem){
+        val currentList = remindersList.value ?: emptyList()
+        val updatedList = currentList.toMutableList()
+        updatedList.remove(reminder)
+        remindersList.value = updatedList
+    }
 
     fun deleteReminder(id: String) {
         viewModelScope.launch {
@@ -26,11 +32,32 @@ class RemindersListViewModel(
         }
     }
 
-    fun getAllReminderDataItems() {
+    fun getReminders() {
         viewModelScope.launch {
-            dataSource.getReminders()
+            dataSource.getAllReminders()
         }
     }
+
+//    fun getReminders() {
+//        viewModelScope.launch {
+//            when (val result = dataSource.getAllReminders()) {
+//                is Result.Success<*> -> {
+//                    return@launch result.data
+//                }
+//                is Result.Error ->
+//                    showSnackBar.value = result.message
+//            }
+//        }
+//    }
+
+//    suspend fun getReminders() : List<ReminderDTO> {
+//        val result = dataSource.getAllReminders()
+//        when (result) {
+//            is Result.Success<*> -> {
+//                return result.data as List<ReminderDTO>
+//            }
+//        }
+//    }
 
     /**
      * Get all the reminders from the DataSource and add them to the remindersList to be shown on the UI,
@@ -40,7 +67,7 @@ class RemindersListViewModel(
         showLoading.value = true
         viewModelScope.launch {
             //interacting with the dataSource has to be through a coroutine
-            val result = dataSource.getReminders()
+            val result = dataSource.getAllReminders()
             showLoading.postValue(false)
             when (result) {
                 is Result.Success<*> -> {
