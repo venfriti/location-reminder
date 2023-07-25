@@ -32,33 +32,6 @@ class RemindersListViewModel(
         }
     }
 
-    fun getReminders() {
-        viewModelScope.launch {
-            dataSource.getAllReminders()
-        }
-    }
-
-//    fun getReminders() {
-//        viewModelScope.launch {
-//            when (val result = dataSource.getAllReminders()) {
-//                is Result.Success<*> -> {
-//                    return@launch result.data
-//                }
-//                is Result.Error ->
-//                    showSnackBar.value = result.message
-//            }
-//        }
-//    }
-
-//    suspend fun getReminders() : List<ReminderDTO> {
-//        val result = dataSource.getAllReminders()
-//        when (result) {
-//            is Result.Success<*> -> {
-//                return result.data as List<ReminderDTO>
-//            }
-//        }
-//    }
-
     /**
      * Get all the reminders from the DataSource and add them to the remindersList to be shown on the UI,
      * or show error if any
@@ -99,17 +72,5 @@ class RemindersListViewModel(
      */
     private fun invalidateShowNoData() {
         showNoData.value = remindersList.value == null || remindersList.value!!.isEmpty()
-    }
-
-    enum class AuthenticationState {
-        AUTHENTICATED, UNAUTHENTICATED
-    }
-
-    val authenticationState = FirebaseUserLiveData().map { user ->
-        if (user != null) {
-            AuthenticationState.AUTHENTICATED
-        } else {
-            AuthenticationState.UNAUTHENTICATED
-        }
     }
 }
