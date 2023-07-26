@@ -15,8 +15,7 @@ class RemindersListAdapter(private val viewModel: RemindersListViewModel,
     }
     fun deleteItem(position: Int) {
         val item = getItem(position)
-        viewModel.deleteReminder(item.id)
-        viewModel.deleteReminders(item)
+        viewModel.deleteReminder(item, item.id)
         notifyItemRemoved(position)
     }
 

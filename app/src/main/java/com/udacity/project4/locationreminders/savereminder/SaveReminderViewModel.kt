@@ -74,12 +74,6 @@ class SaveReminderViewModel(val app: Application, val dataSource: ReminderDataSo
         }
     }
 
-//    fun deleteReminder(reminderData: ReminderDataItem){
-//        viewModelScope.launch {
-//            dataSource.deleteReminder(reminderData.id)
-//        }
-//    }
-
     /**
      * Validate the entered data and show error to the user if there's any invalid data
      */

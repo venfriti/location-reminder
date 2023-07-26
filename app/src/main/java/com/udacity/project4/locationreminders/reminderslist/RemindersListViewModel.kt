@@ -16,17 +16,13 @@ class RemindersListViewModel(
     private val dataSource: ReminderDataSource
 ) : BaseViewModel(app) {
     // list that holds the reminder data to be displayed on the UI
-//    val remindersList: MutableList<ReminderDataItem> = mutableListOf()
     val remindersList = MutableLiveData<List<ReminderDataItem>>()
 
-    fun deleteReminders(reminder: ReminderDataItem){
+    fun deleteReminder(reminder: ReminderDataItem, id: String){
         val currentList = remindersList.value ?: emptyList()
         val updatedList = currentList.toMutableList()
         updatedList.remove(reminder)
         remindersList.value = updatedList
-    }
-
-    fun deleteReminder(id: String) {
         viewModelScope.launch {
             dataSource.deleteReminder(id)
         }
