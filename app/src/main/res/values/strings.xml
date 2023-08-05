@@ -45,4 +45,6 @@
     <string name="unknown_geofence_error">Unknown error: the Geofence service is not available right now</string>
     <string name="ok">OK</string>
     <string name="location">Location</string>
+    <string name="fab">floating action button</string>
+    <string name="geofence_radius">Enter a custom url radius</string>
 </resources>

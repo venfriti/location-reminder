@@ -32,6 +32,7 @@ import com.udacity.project4.locationreminders.geofence.GeofenceBroadcastReceiver
 import com.udacity.project4.locationreminders.reminderslist.ReminderDataItem
 import com.udacity.project4.utils.setDisplayHomeAsUpEnabled
 import org.koin.android.ext.android.inject
+import java.lang.NumberFormatException
 
 class SaveReminderFragment : BaseFragment() {
 
@@ -80,6 +81,14 @@ class SaveReminderFragment : BaseFragment() {
             val directions = SaveReminderFragmentDirections
                 .actionSaveReminderFragmentToSelectLocationFragment()
             _viewModel.navigationCommand.value = NavigationCommand.To(directions)
+        }
+
+        val editText = binding.reminderRadius.text.toString()
+
+        radius = try {
+            editText.toFloat()
+        } catch (e: NumberFormatException){
+            500f
         }
 
         binding.saveReminder.setOnClickListener {
