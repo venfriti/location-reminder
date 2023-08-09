@@ -101,7 +101,7 @@ class SaveReminderFragment : BaseFragment() {
             // TODO: use the user entered reminder details to:
             //  1) add a geofencing request
             newDataItem = ReminderDataItem(title, description, location, latitude, longitude)
-            if (validateEnteredData(newDataItem)) {
+            if (_viewModel.validateEnteredData(newDataItem)) {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                     if (isPermissionGranted()) {
                         addGeofence()
@@ -117,24 +117,8 @@ class SaveReminderFragment : BaseFragment() {
                     addGeofence()
                     _viewModel.validateAndSaveReminder(newDataItem)
                 }
-
-                //  2) save the reminder to the local db
-
             }
         }
-    }
-
-    private fun validateEnteredData(reminderData: ReminderDataItem): Boolean {
-        if (reminderData.title.isNullOrEmpty()) {
-            Toast.makeText(requireContext(), "Enter a title", Toast.LENGTH_SHORT).show()
-            return false
-        }
-
-        if (reminderData.location.isNullOrEmpty()) {
-            Toast.makeText(requireContext(), "Pick a Location", Toast.LENGTH_SHORT).show()
-            return false
-        }
-        return true
     }
 
     @SuppressLint("MissingPermission")
