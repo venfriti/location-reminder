@@ -57,7 +57,7 @@ class ReminderListFragment : BaseFragment() {
         setupRecyclerView()
 
         binding.addReminderFAB.setOnClickListener {
-            navigateToAddReminder()
+            _viewModel.navigateToAddReminder()
         }
 
         val menuHost: MenuHost = requireActivity()
@@ -83,13 +83,6 @@ class ReminderListFragment : BaseFragment() {
         super.onResume()
         // Load the reminders list on the ui
         _viewModel.loadReminders()
-    }
-
-    private fun navigateToAddReminder() {
-        // Use the navigationCommand live data to navigate between the fragments
-        _viewModel.navigationCommand.postValue(
-            NavigationCommand.To(ReminderListFragmentDirections.toSaveReminder())
-        )
     }
 
     private fun setupRecyclerView() {

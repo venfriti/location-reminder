@@ -1,5 +1,6 @@
 package com.udacity.project4.locationreminders.data
 
+import androidx.lifecycle.MutableLiveData
 import com.udacity.project4.locationreminders.data.dto.ReminderDTO
 import com.udacity.project4.locationreminders.data.dto.Result
 
@@ -8,24 +9,40 @@ class FakeDataSource : ReminderDataSource {
 
 //    TODO: Create a fake data source to act as a double to the real data source
 
+    private var remindersServiceData: LinkedHashMap<String, ReminderDTO> = LinkedHashMap()
+
+    private var shouldReturnError: Boolean = false
+
+    fun setReturnError(value: Boolean){
+        shouldReturnError = value
+    }
     override suspend fun getAllReminders(): Result<List<ReminderDTO>> {
-        TODO("Return the reminders")
+        if (shouldReturnError) {
+            return Result.Error("Test Exception")
+        }
+        return Result.Success(remindersServiceData.values.toList())
     }
 
     override suspend fun saveReminder(reminder: ReminderDTO) {
-        TODO("save the reminder")
+        remindersServiceData.values.add(reminder)
     }
 
     override suspend fun getReminder(id: String): Result<ReminderDTO> {
-        TODO("return the reminder with the id")
+       if (shouldReturnError) {
+           return Result.Error("Test Exception")
+       }
+        remindersServiceData[id]?.let {
+            return Result.Success(it)
+        }
+        return Result.Error("Could not find Reminder")
     }
 
     override suspend fun deleteReminder(id: String) {
-        TODO("Not yet implemented")
+        remindersServiceData.values.remove(remindersServiceData[id])
     }
 
     override suspend fun deleteAllReminders() {
-        TODO("delete all the reminders")
+        remindersServiceData.clear()
     }
 
 

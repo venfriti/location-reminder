@@ -6,6 +6,7 @@ import androidx.lifecycle.map
 import androidx.lifecycle.viewModelScope
 import com.udacity.project4.authentication.FirebaseUserLiveData
 import com.udacity.project4.base.BaseViewModel
+import com.udacity.project4.base.NavigationCommand
 import com.udacity.project4.locationreminders.data.ReminderDataSource
 import com.udacity.project4.locationreminders.data.dto.ReminderDTO
 import com.udacity.project4.locationreminders.data.dto.Result
@@ -17,6 +18,13 @@ class RemindersListViewModel(
 ) : BaseViewModel(app) {
     // list that holds the reminder data to be displayed on the UI
     val remindersList = MutableLiveData<List<ReminderDataItem>>()
+
+    fun navigateToAddReminder() {
+        // Use the navigationCommand live data to navigate between the fragments
+        navigationCommand.postValue(
+            NavigationCommand.To(ReminderListFragmentDirections.toSaveReminder())
+        )
+    }
 
     fun deleteReminder(reminder: ReminderDataItem, id: String){
         val currentList = remindersList.value ?: emptyList()
